@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { renderToBuffer } from '@react-pdf/renderer';
 import { PDFDocument } from '@/components/pdf/renderer/pdf-document';
 import { pdfInstructionsSchema } from '@/lib/pdf/schema';
+import { sanitizeColors } from '@/lib/utils/color-converter';
 import React from 'react';
 import type { PDFInstructions, PDFElement, Border } from '@/types/pdf';
 
@@ -10,7 +11,7 @@ function sanitizeBorder(border: Border | undefined): Border | undefined {
   if (!border) return undefined;
   return {
     width: typeof border.width === 'number' ? border.width : undefined,
-    color: border.color,
+    color: border.color ? sanitizeColors(border.color) : undefined,
     style: border.style,
     radius: typeof border.radius === 'number' ? border.radius : undefined,
   };
@@ -18,30 +19,35 @@ function sanitizeBorder(border: Border | undefined): Border | undefined {
 
 // Recursively sanitize elements to fix common issues
 function sanitizeElement(element: PDFElement): PDFElement {
-  if (element.type === 'section') {
+  // First sanitize colors in the element
+  const sanitized = sanitizeColors(element) as PDFElement;
+
+  if (sanitized.type === 'section') {
     return {
-      ...element,
-      border: sanitizeBorder(element.border),
-      children: element.children.map(sanitizeElement),
+      ...sanitized,
+      border: sanitizeBorder(sanitized.border),
+      children: sanitized.children.map(sanitizeElement),
     };
   }
-  if (element.type === 'columns') {
+  if (sanitized.type === 'columns') {
     return {
-      ...element,
-      columns: element.columns.map((col) => ({
+      ...sanitized,
+      columns: sanitized.columns.map((col) => ({
         ...col,
         children: col.children.map(sanitizeElement),
       })),
     };
   }
-  return element;
+  return sanitized;
 }
 
 // Sanitize the entire instructions object
 function sanitizeInstructions(instructions: PDFInstructions): PDFInstructions {
+  // Sanitize colors throughout the entire instructions object
+  const sanitized = sanitizeColors(instructions) as PDFInstructions;
   return {
-    ...instructions,
-    content: instructions.content.map(sanitizeElement),
+    ...sanitized,
+    content: sanitized.content.map(sanitizeElement),
   };
 }
 

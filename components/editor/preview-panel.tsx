@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { cn } from '@/lib/utils';
 import type { PDFInstructions } from '@/types/pdf';
 import { ElementPreview } from './preview/element-preview';
@@ -11,16 +11,28 @@ interface PreviewPanelProps {
   elements: ElementWithId[];
   selectedElementId: string | null;
   onSelectElement: (id: string | null) => void;
+  onEditElement?: (id: string) => void;
 }
 
-export function PreviewPanel({
+export interface PreviewPanelRef {
+  getPreviewElement: () => HTMLElement | null;
+}
+
+export const PreviewPanel = forwardRef<PreviewPanelRef, PreviewPanelProps>(function PreviewPanel({
   instructions,
   elements,
   selectedElementId,
   onSelectElement,
-}: PreviewPanelProps) {
+  onEditElement,
+}, ref) {
   const { theme, pageSettings } = instructions;
   const containerRef = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  // Expose method to get the preview element for thumbnail capture
+  useImperativeHandle(ref, () => ({
+    getPreviewElement: () => previewRef.current,
+  }));
 
   // A4 aspect ratio is approximately 1:1.414
   const isLandscape = pageSettings?.orientation === 'landscape';
@@ -40,6 +52,7 @@ export function PreviewPanel({
   return (
     <div className="flex justify-center">
       <div
+        ref={previewRef}
         className={cn(
           'bg-white shadow-lg',
           isLandscape ? 'w-full max-w-4xl' : 'w-full max-w-2xl'
@@ -52,15 +65,16 @@ export function PreviewPanel({
         {/* Paper with margins */}
         <div
           ref={containerRef}
-          className="h-full overflow-auto"
+          className=""
           style={{
             padding: `${pageSettings?.margins?.top ?? 40}px ${pageSettings?.margins?.right ?? 40}px ${pageSettings?.margins?.bottom ?? 60}px ${pageSettings?.margins?.left ?? 40}px`,
             color: theme?.textColor || '#1a202c',
             backgroundColor: theme?.backgroundColor || '#ffffff',
+            minHeight: isLandscape ? 'auto' : '800px',
           }}
         >
           {elements.length === 0 ? (
-            <div className="flex h-full items-center justify-center text-muted-foreground">
+            <div className="flex min-h-[800px] items-center justify-center text-muted-foreground">
               <p>Add elements to see them here</p>
             </div>
           ) : (
@@ -78,6 +92,7 @@ export function PreviewPanel({
                         : 'hover:ring-2 hover:ring-blue-300 hover:ring-offset-2'
                     )}
                     onClick={() => onSelectElement(element.id)}
+                    onDoubleClick={() => onEditElement?.(element.id)}
                   >
                     {/* Type label tab */}
                     {isSelected && (
@@ -95,4 +110,4 @@ export function PreviewPanel({
       </div>
     </div>
   );
-}
+});

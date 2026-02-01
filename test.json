@@ -1,0 +1,143 @@
+
+{
+  "theme": {
+    "textColor": "#333333",
+    "fontFamily": "Arial, sans-serif",
+    "mutedColor": "#777777",
+    "accentColor": "#008000",
+    "primaryColor": "#0044cc",
+    "secondaryColor": "#f4f4f4",
+    "backgroundColor": "#ffffff"
+  },
+  "content": [
+    {
+      "type": "heading",
+      "align": "center",
+      "color": "#0044cc",
+      "level": 1,
+      "content": "Quarterly Sales Report",
+      "marginBottom": 30
+    },
+    {
+      "type": "paragraph",
+      "content": "This report provides a summary of sales performance for the last quarter, including revenue details and visual representations of our sales data.",
+      "fontSize": 12,
+      "fontWeight": "normal",
+      "lineHeight": 1.5,
+      "marginBottom": 20
+    },
+    {
+      "type": "heading",
+      "align": "left",
+      "color": "#333333",
+      "level": 2,
+      "content": "Revenue Charts",
+      "marginBottom": 20
+    },
+    {
+      "type": "lineChart",
+      "title": "Monthly Revenue Trend",
+      "data": [
+        {
+          "label": "Revenue",
+          "values": [
+            { "x": "January", "y": 15000 },
+            { "x": "February", "y": 20000 },
+            { "x": "March", "y": 25000 }
+          ],
+          "color": "#0044cc"
+        }
+      ],
+      "height": 300,
+      "width": 500,
+      "showDots": true,
+      "showGrid": true,
+      "marginBottom": 30
+    },
+    {
+      "type": "heading",
+      "align": "left",
+      "color": "#333333",
+      "level": 2,
+      "content": "Revenue Summary Table",
+      "marginBottom": 20
+    },
+    {
+      "type": "table",
+      "headers": [
+        "Month",
+        "Revenue (USD)"
+      ],
+      "rows": [
+        [
+          "January",
+          "15,000"
+        ],
+        [
+          "February",
+          "20,000"
+        ],
+        [
+          "March",
+          "25,000"
+        ]
+      ],
+      "cellStyle": {
+        "padding": 8,
+        "fontSize": 12,
+        "borderColor": "#dddddd"
+      },
+      "headerStyle": {
+        "color": "#ffffff",
+        "fontWeight": "bold",
+        "backgroundColor": "#0044cc"
+      },
+      "marginBottom": 30,
+      "alternateRowColor": "#f9f9f9"
+    },
+    {
+      "type": "heading",
+      "align": "left",
+      "color": "#333333",
+      "level": 2,
+      "content": "Overview and Analysis",
+      "marginBottom": 20
+    },
+    {
+      "type": "paragraph",
+      "content": "Overall, the sales performance showed a positive trend in the last quarter, with revenues increasing significantly each month. This consistent growth indicates a successful quarter and highlights areas for further development and investment.",
+      "fontSize": 12,
+      "fontWeight": "normal",
+      "lineHeight": 1.5,
+      "marginBottom": 20
+    },
+    {
+      "type": "callout",
+      "content": "**Key Takeaway:** The sales team successfully increased revenue by 66.67% from January to March.",
+      "variant": "success"
+    }
+  ],
+  "metadata": {
+    "title": "Quarterly Sales Report",
+    "author": "Sales Manager",
+    "subject": "Sales Summary",
+    "keywords": [
+      "sales",
+      "quarterly report",
+      "revenue",
+      "charts",
+      "summary"
+    ],
+    "createdAt": "2023-10-01"
+  },
+  "pageSettings": {
+    "size": "A4",
+    "margins": {
+      "top": 20,
+      "left": 20,
+      "right": 20,
+      "bottom": 20
+    },
+    "orientation": "portrait"
+  }
+}

@@ -1,83 +1,79 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
-  AISettings,
-  DEFAULT_AI_SETTINGS,
-  AIProvider,
-  getDefaultModelForProvider,
-} from '@/types/ai-settings';
+import type { UserSettingsResponse } from '@/app/api/settings/route';
 
-const STORAGE_KEY = 'pdf-generator-ai-settings';
+interface AISettingsState {
+  useCustomApiKey: boolean;
+  hasAnthropicKey: boolean;
+  hasOpenaiKey: boolean;
+  provider: string;
+  model: string;
+}
+
+const DEFAULT_SETTINGS: AISettingsState = {
+  useCustomApiKey: false,
+  hasAnthropicKey: false,
+  hasOpenaiKey: false,
+  provider: 'anthropic',
+  model: 'claude-sonnet-4-20250514',
+};
 
 export function useAISettings() {
-  const [settings, setSettings] = useState<AISettings>(DEFAULT_AI_SETTINGS);
+  const [settings, setSettings] = useState<AISettingsState>(DEFAULT_SETTINGS);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load settings from localStorage on mount
+  // Load settings from API on mount
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setSettings({ ...DEFAULT_AI_SETTINGS, ...parsed });
-      }
-    } catch (error) {
-      console.error('Failed to load AI settings:', error);
-    }
-    setIsLoaded(true);
-  }, []);
-
-  // Save settings to localStorage whenever they change
-  const saveSettings = useCallback((newSettings: Partial<AISettings>) => {
-    setSettings((prev) => {
-      const updated = { ...prev, ...newSettings };
+    async function loadSettings() {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        const response = await fetch('/api/settings');
+        if (response.ok) {
+          const data: { settings: UserSettingsResponse } = await response.json();
+          setSettings({
+            useCustomApiKey: data.settings.useCustomApiKey,
+            hasAnthropicKey: data.settings.hasAnthropicKey,
+            hasOpenaiKey: data.settings.hasOpenaiKey,
+            provider: data.settings.provider,
+            model: data.settings.model,
+          });
+        }
       } catch (error) {
-        console.error('Failed to save AI settings:', error);
+        console.error('Failed to load AI settings:', error);
       }
-      return updated;
-    });
+      setIsLoaded(true);
+    }
+    loadSettings();
   }, []);
 
-  // Update provider and reset model to default for that provider
-  const setProvider = useCallback((provider: AIProvider) => {
-    saveSettings({
-      provider,
-      model: getDefaultModelForProvider(provider),
-    });
-  }, [saveSettings]);
+  // Check if AI can be used (either default or custom key is available)
+  const hasAnyApiKey = useCallback(() => {
+    // If not using custom key, the app's default configuration is available
+    if (!settings.useCustomApiKey) {
+      return true;
+    }
+    // If using custom key, check if the current provider has a key
+    if (settings.provider === 'anthropic') {
+      return settings.hasAnthropicKey;
+    }
+    return settings.hasOpenaiKey;
+  }, [settings.useCustomApiKey, settings.provider, settings.hasAnthropicKey, settings.hasOpenaiKey]);
 
-  // Update model
-  const setModel = useCallback((model: string) => {
-    saveSettings({ model });
-  }, [saveSettings]);
-
-  // Update API keys
-  const setAnthropicApiKey = useCallback((apiKey: string) => {
-    saveSettings({ anthropicApiKey: apiKey });
-  }, [saveSettings]);
-
-  const setOpenaiApiKey = useCallback((apiKey: string) => {
-    saveSettings({ openaiApiKey: apiKey });
-  }, [saveSettings]);
-
-  // Get the current API key for the selected provider
-  const getCurrentApiKey = useCallback(() => {
-    return settings.provider === 'anthropic'
-      ? settings.anthropicApiKey
-      : settings.openaiApiKey;
-  }, [settings.provider, settings.anthropicApiKey, settings.openaiApiKey]);
+  // Check if the current provider has an API key configured
+  const hasCurrentProviderApiKey = useCallback(() => {
+    if (!settings.useCustomApiKey) {
+      return true; // Using default configuration
+    }
+    if (settings.provider === 'anthropic') {
+      return settings.hasAnthropicKey;
+    }
+    return settings.hasOpenaiKey;
+  }, [settings.useCustomApiKey, settings.provider, settings.hasAnthropicKey, settings.hasOpenaiKey]);
 
   return {
     settings,
     isLoaded,
-    setProvider,
-    setModel,
-    setAnthropicApiKey,
-    setOpenaiApiKey,
-    getCurrentApiKey,
-    saveSettings,
+    hasAnyApiKey,
+    hasCurrentProviderApiKey,
   };
 }

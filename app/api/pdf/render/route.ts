@@ -4,7 +4,57 @@ import { PDFDocument } from '@/components/pdf/renderer/pdf-document';
 import { pdfInstructionsSchema } from '@/lib/pdf/schema';
 import { sanitizeColors } from '@/lib/utils/color-converter';
 import React from 'react';
-import type { PDFInstructions, PDFElement, Border } from '@/types/pdf';
+import type { PDFInstructions, PDFElement, Border } from '@/lib/pdf/schema';
+
+// Register fonts before any PDF rendering
+import '@/lib/pdf/fonts';
+
+// Use built-in Helvetica as default for reliability
+const DEFAULT_FONT = 'Helvetica';
+
+// Valid font families for react-pdf (registered fonts + built-in)
+const VALID_FONTS = new Set([
+  'Roboto',
+  'Roboto Mono',
+  'Helvetica',
+  'Times-Roman',
+  'Courier',
+]);
+
+// Sanitize font family to ensure it's a registered font
+function sanitizeFontFamily(fontFamily: string | undefined): string {
+  if (!fontFamily) return DEFAULT_FONT;
+
+  // Check if the font is valid
+  if (VALID_FONTS.has(fontFamily)) {
+    return fontFamily;
+  }
+
+  // Replace unregistered fonts with the default
+  return DEFAULT_FONT;
+}
+
+// Recursively sanitize all fontFamily values in an object
+function sanitizeFontsRecursively<T>(obj: T): T {
+  if (obj === null || obj === undefined) return obj;
+  if (typeof obj !== 'object') return obj;
+
+  if (Array.isArray(obj)) {
+    return obj.map(item => sanitizeFontsRecursively(item)) as T;
+  }
+
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+    if (key === 'fontFamily' && typeof value === 'string') {
+      result[key] = sanitizeFontFamily(value);
+    } else if (typeof value === 'object' && value !== null) {
+      result[key] = sanitizeFontsRecursively(value);
+    } else {
+      result[key] = value;
+    }
+  }
+  return result as T;
+}
 
 // Sanitize border properties to ensure they're valid for react-pdf
 function sanitizeBorder(border: Border | undefined): Border | undefined {
@@ -44,10 +94,14 @@ function sanitizeElement(element: PDFElement): PDFElement {
 // Sanitize the entire instructions object
 function sanitizeInstructions(instructions: PDFInstructions): PDFInstructions {
   // Sanitize colors throughout the entire instructions object
-  const sanitized = sanitizeColors(instructions) as PDFInstructions;
+  const colorSanitized = sanitizeColors(instructions) as PDFInstructions;
+
+  // Sanitize fonts throughout the entire instructions object
+  const fontSanitized = sanitizeFontsRecursively(colorSanitized);
+
   return {
-    ...sanitized,
-    content: sanitized.content.map(sanitizeElement),
+    ...fontSanitized,
+    content: fontSanitized.content.map(sanitizeElement),
   };
 }
 

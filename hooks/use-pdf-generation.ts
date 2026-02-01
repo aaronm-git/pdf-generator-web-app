@@ -1,24 +1,8 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import type { PDFInstructions } from '@/types/pdf';
+import type { PDFInstructions } from '@/lib/pdf/schema';
 import type { GenerationState, GenerationStatus } from '@/types/ai';
-import type { AISettings } from '@/types/ai-settings';
-
-const STORAGE_KEY = 'pdf-generator-ai-settings';
-
-function getAISettings(): AISettings | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      return JSON.parse(stored);
-    }
-  } catch (error) {
-    console.error('Failed to load AI settings:', error);
-  }
-  return null;
-}
 
 export function usePDFGeneration() {
   const [state, setState] = useState<GenerationState>({
@@ -36,24 +20,12 @@ export function usePDFGeneration() {
     setState((prev) => ({ ...prev, status: 'generating', error: null }));
 
     try {
-      // Get AI settings from localStorage
-      const settings = getAISettings();
-      const provider = settings?.provider || 'anthropic';
-      const model = settings?.model || (provider === 'anthropic' ? 'claude-sonnet-4-20250514' : 'gpt-4o');
-      const apiKey = provider === 'anthropic'
-        ? settings?.anthropicApiKey
-        : settings?.openaiApiKey;
-
-      // Get AI instructions only (no PDF render)
+      // The server will fetch user settings from the database
+      // No need to send API keys from the client
       const genResponse = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt,
-          provider,
-          model,
-          apiKey,
-        }),
+        body: JSON.stringify({ prompt }),
       });
 
       if (!genResponse.ok) {

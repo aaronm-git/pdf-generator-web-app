@@ -1,23 +1,23 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { PDFEditor, type PDFEditorRef } from '@/components/editor/pdf-editor';
-import { useInstructions } from '@/contexts/instructions-context';
+import { useEffect } from 'react';
+import { PDFEditor } from '@/components/editor/pdf-editor';
+import { useEditorStore } from '@/lib/store';
 
 export default function EditorPage() {
-  const { pendingInstructions, clearPendingInstructions } = useInstructions();
-  const editorRef = useRef<PDFEditorRef>(null);
+  const entity = useEditorStore((s) => s.entity);
+  const createNewEntity = useEditorStore((s) => s.createNewEntity);
 
+  // Ensure we have an entity on mount
   useEffect(() => {
-    if (pendingInstructions && editorRef.current) {
-      editorRef.current.loadInstructions(pendingInstructions);
-      clearPendingInstructions();
+    if (!entity) {
+      createNewEntity();
     }
-  }, [pendingInstructions, clearPendingInstructions]);
+  }, [entity, createNewEntity]);
 
   return (
     <div className="h-[calc(100vh-7rem)]">
-      <PDFEditor ref={editorRef} />
+      <PDFEditor />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from '@react-pdf/renderer';
-import type { SpacerElement } from '@/types/pdf';
+import type { SpacerElement } from '@/lib/pdf/schema';
 
 type Props = SpacerElement;
 

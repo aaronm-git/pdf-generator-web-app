@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from '@react-pdf/renderer';
-import type { KeyValueElement, PDFTheme } from '@/types/pdf';
+import type { KeyValueElement, PDFTheme } from '@/lib/pdf/schema';
 
 interface Props extends KeyValueElement {
   theme: PDFTheme;

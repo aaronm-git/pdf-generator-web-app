@@ -24,11 +24,12 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from '@/components/ui/sidebar';
+import type { User } from '@/lib/auth';
 
 const mainNavItems = [
   {
     title: 'Dashboard',
-    url: '/',
+    url: '/dashboard',
     icon: LayoutDashboard,
   },
   {
@@ -61,7 +62,11 @@ const secondaryNavItems = [
   },
 ];
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  user: User;
+}
+
+export function AppSidebar({ user }: AppSidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -70,7 +75,7 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/">
+              <Link href="/dashboard">
                 <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <FileText className="size-4" />
                 </div>
@@ -95,7 +100,7 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname === item.url}
+                    isActive={pathname === item.url || pathname.startsWith(item.url + '/')}
                     tooltip={item.title}
                   >
                     <Link href={item.url}>
@@ -136,13 +141,13 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg">
-              <div className="bg-muted flex aspect-square size-8 items-center justify-center rounded-lg">
-                <span className="text-sm font-medium">U</span>
+              <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg text-sm font-medium">
+                {user.name?.charAt(0).toUpperCase() || 'U'}
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">User</span>
+                <span className="truncate font-semibold">{user.name}</span>
                 <span className="truncate text-xs text-muted-foreground">
-                  Free Plan
+                  {user.email}
                 </span>
               </div>
             </SidebarMenuButton>

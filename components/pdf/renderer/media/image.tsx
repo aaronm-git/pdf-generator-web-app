@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Image, StyleSheet } from '@react-pdf/renderer';
-import type { ImageElement, PDFTheme } from '@/types/pdf';
+import type { ImageElement, PDFTheme } from '@/lib/pdf/schema';
 
 interface Props extends ImageElement {
   theme: PDFTheme;

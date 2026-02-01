@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Svg, Path, Circle, Rect, G, StyleSheet } from '@react-pdf/renderer';
-import type { LineChartElement, PDFTheme } from '@/types/pdf';
+import type { LineChartElement, PDFTheme } from '@/lib/pdf/schema';
 
 interface Props extends LineChartElement {
   theme: PDFTheme;
@@ -59,6 +59,11 @@ export function PDFLineChart({
       fontSize: 8,
       color: theme.textColor || '#1a202c',
     },
+    emptyMessage: {
+      fontSize: 10,
+      color: theme.mutedColor || '#718096',
+      textAlign: 'center',
+    },
   });
 
   const chartPadding = { top: 20, right: 20, bottom: 30, left: 40 };
@@ -67,13 +72,16 @@ export function PDFLineChart({
 
   // Find min and max values across all series
   const allValues = data.flatMap((series) => series.values.map((v) => v.y));
-  const maxValue = Math.max(...allValues);
-  const minValue = Math.min(0, Math.min(...allValues));
-  const valueRange = maxValue - minValue;
+
+  // Handle empty data case
+  const hasData = allValues.length > 0;
+  const maxValue = hasData ? Math.max(...allValues) : 100;
+  const minValue = hasData ? Math.min(0, Math.min(...allValues)) : 0;
+  const valueRange = maxValue - minValue || 1; // Prevent division by zero
 
   // Get all unique x labels
   const xLabels = data[0]?.values.map((v) => String(v.x)) || [];
-  const xStep = chartWidth / (xLabels.length - 1 || 1);
+  const xStep = xLabels.length > 1 ? chartWidth / (xLabels.length - 1) : chartWidth;
 
   const getY = (value: number) => {
     return (
@@ -106,7 +114,12 @@ export function PDFLineChart({
             ))}
 
           {/* Lines for each series */}
-          {data.map((series, seriesIdx) => {
+          {hasData && data.map((series, seriesIdx) => {
+            // Skip series with no values
+            if (!series.values || series.values.length === 0) {
+              return null;
+            }
+
             const color = series.color || defaultColors[seriesIdx % defaultColors.length];
             const points = series.values.map((v, i) => ({
               x: getX(i),
@@ -119,7 +132,7 @@ export function PDFLineChart({
 
             return (
               <G key={seriesIdx}>
-                <Path d={pathD} stroke={color} strokeWidth={2} fill="none" />
+                {pathD && <Path d={pathD} stroke={color} strokeWidth={2} fill="none" />}
                 {showDots &&
                   points.map((p, i) => (
                     <Circle
@@ -134,6 +147,9 @@ export function PDFLineChart({
             );
           })}
         </Svg>
+        {!hasData && (
+          <Text style={styles.emptyMessage}>No data available</Text>
+        )}
       </View>
 
       {/* Legend */}

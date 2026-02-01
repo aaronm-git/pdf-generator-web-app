@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Svg, Path, G, StyleSheet } from '@react-pdf/renderer';
-import type { PieChartElement, PDFTheme } from '@/types/pdf';
+import type { PieChartElement, PDFTheme } from '@/lib/pdf/schema';
 
 interface Props extends PieChartElement {
   theme: PDFTheme;
@@ -62,9 +62,25 @@ export function PDFPieChart({
       fontSize: 9,
       color: theme.textColor || '#1a202c',
     },
+    emptyMessage: {
+      fontSize: 10,
+      color: theme.mutedColor || '#718096',
+      textAlign: 'center',
+      padding: 20,
+    },
   });
 
-  const total = data.reduce((sum, item) => sum + item.value, 0);
+  // Handle empty data case
+  if (!data || data.length === 0) {
+    return (
+      <View style={styles.container}>
+        {title && <Text style={styles.title}>{title}</Text>}
+        <Text style={styles.emptyMessage}>No data available</Text>
+      </View>
+    );
+  }
+
+  const total = data.reduce((sum, item) => sum + item.value, 0) || 1; // Prevent division by zero
   const centerX = 80;
   const centerY = 80;
   const radius = 70;

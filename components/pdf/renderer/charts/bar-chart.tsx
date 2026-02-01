@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Svg, Rect, G, StyleSheet } from '@react-pdf/renderer';
-import type { BarChartElement, PDFTheme } from '@/types/pdf';
+import type { BarChartElement, PDFTheme } from '@/lib/pdf/schema';
 
 interface Props extends BarChartElement {
   theme: PDFTheme;
@@ -87,9 +87,25 @@ export function PDFBarChart({
       fontSize: 8,
       color: theme.textColor || '#1a202c',
     },
+    emptyMessage: {
+      fontSize: 10,
+      color: theme.mutedColor || '#718096',
+      textAlign: 'center',
+      padding: 20,
+    },
   });
 
-  const maxValue = Math.max(...data.map((d) => d.value));
+  // Handle empty data case
+  if (!data || data.length === 0) {
+    return (
+      <View style={styles.container}>
+        {title && <Text style={styles.title}>{title}</Text>}
+        <Text style={styles.emptyMessage}>No data available</Text>
+      </View>
+    );
+  }
+
+  const maxValue = Math.max(...data.map((d) => d.value)) || 1; // Prevent division by zero
   const isVertical = orientation === 'vertical';
 
   if (isVertical) {

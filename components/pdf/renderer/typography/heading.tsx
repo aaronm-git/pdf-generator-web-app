@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, StyleSheet } from '@react-pdf/renderer';
-import type { HeadingElement, PDFTheme } from '@/types/pdf';
+import type { HeadingElement, PDFTheme } from '@/lib/pdf/schema';
 
 interface Props extends HeadingElement {
   theme: PDFTheme;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from '@react-pdf/renderer';
-import type { ListElement, PDFTheme } from '@/types/pdf';
+import type { ListElement, PDFTheme } from '@/lib/pdf/schema';
 import { parseAndRenderMarkdownToPDF } from '@/lib/markdown/pdf-parser';
 
 interface Props extends ListElement {

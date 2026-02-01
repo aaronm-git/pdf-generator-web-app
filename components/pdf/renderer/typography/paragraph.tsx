@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, StyleSheet } from '@react-pdf/renderer';
-import type { ParagraphElement, PDFTheme } from '@/types/pdf';
+import type { ParagraphElement, PDFTheme } from '@/lib/pdf/schema';
 import { parseAndRenderMarkdownToPDF } from '@/lib/markdown/pdf-parser';
 
 interface Props extends ParagraphElement {

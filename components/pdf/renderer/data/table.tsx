@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from '@react-pdf/renderer';
-import type { TableElement, PDFTheme } from '@/types/pdf';
+import type { TableElement, PDFTheme } from '@/lib/pdf/schema';
 
 interface Props extends TableElement {
   theme: PDFTheme;

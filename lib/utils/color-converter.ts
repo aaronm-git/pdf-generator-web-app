@@ -105,17 +105,31 @@ export function sanitizeColors(obj: any): any {
   }
 
   if (typeof obj === 'string') {
-    // Check if it looks like a color property value
+    // Check if it looks like a color function value
     if (
       obj.includes('rgb') ||
       obj.includes('hsl') ||
       obj.includes('lab') ||
       obj.includes('oklch') ||
       obj.includes('lch') ||
-      obj.startsWith('#') ||
-      /^[a-z]+$/i.test(obj) // Named colors
+      obj.startsWith('#')
     ) {
       return convertColorToHex(obj);
+    }
+    // Only convert known named colors, not arbitrary strings like "paragraph" or "left"
+    const knownNamedColors: Record<string, string> = {
+      black: '#000000',
+      white: '#ffffff',
+      red: '#ff0000',
+      green: '#008000',
+      blue: '#0000ff',
+      yellow: '#ffff00',
+      cyan: '#00ffff',
+      magenta: '#ff00ff',
+      transparent: '#00000000',
+    };
+    if (knownNamedColors[obj.toLowerCase()]) {
+      return knownNamedColors[obj.toLowerCase()];
     }
     return obj;
   }

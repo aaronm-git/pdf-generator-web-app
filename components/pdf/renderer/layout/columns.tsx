@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from '@react-pdf/renderer';
-import type { ColumnsElement, PDFTheme, PDFElement } from '@/types/pdf';
+import type { ColumnsElement, PDFTheme, PDFElement } from '@/lib/pdf/schema';
 
 interface Props extends Omit<ColumnsElement, 'columns'> {
   theme: PDFTheme;

@@ -1,6 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet } from '@react-pdf/renderer';
-import type { CodeBlockElement, PDFTheme } from '@/types/pdf';
+import type { CodeBlockElement, PDFTheme } from '@/lib/pdf/schema';
+
+// Use built-in Courier font for reliability
+const MONO_FONT = 'Courier';
 
 interface Props extends CodeBlockElement {
   theme: PDFTheme;
@@ -11,7 +14,6 @@ export function PDFCodeBlock({
   language,
   showLineNumbers,
   marginBottom,
-  theme,
 }: Props) {
   const lines = code.split('\n');
 
@@ -30,7 +32,7 @@ export function PDFCodeBlock({
     headerText: {
       fontSize: 9,
       color: '#94a3b8',
-      fontFamily: 'Courier',
+      fontFamily: MONO_FONT,
     },
     codeContainer: {
       padding: 12,
@@ -44,13 +46,13 @@ export function PDFCodeBlock({
       paddingRight: 12,
       color: '#64748b',
       fontSize: 9,
-      fontFamily: 'Courier',
+      fontFamily: MONO_FONT,
     },
     code: {
       flex: 1,
       fontSize: 9,
       color: '#e2e8f0',
-      fontFamily: 'Courier',
+      fontFamily: MONO_FONT,
       lineHeight: 1.5,
     },
   });

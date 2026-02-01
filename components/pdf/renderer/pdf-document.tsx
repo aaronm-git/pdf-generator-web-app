@@ -1,7 +1,10 @@
 import React from 'react';
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer';
-import type { PDFInstructions, PDFTheme } from '@/types/pdf';
+import type { PDFInstructions, PDFTheme } from '@/lib/pdf/schema';
 import { renderElements } from '@/lib/pdf/renderer';
+
+// Use built-in Helvetica as fallback for reliability
+const FALLBACK_FONT = 'Helvetica';
 
 interface Props {
   instructions: PDFInstructions;
@@ -14,7 +17,7 @@ const defaultTheme: PDFTheme = {
   textColor: '#1a202c',
   mutedColor: '#718096',
   backgroundColor: '#ffffff',
-  fontFamily: 'Helvetica',
+  fontFamily: FALLBACK_FONT,
 };
 
 export function PDFDocument({ instructions }: Props) {
@@ -35,7 +38,7 @@ export function PDFDocument({ instructions }: Props) {
 
   const styles = StyleSheet.create({
     page: {
-      fontFamily: mergedTheme.fontFamily || 'Helvetica',
+      fontFamily: mergedTheme.fontFamily || FALLBACK_FONT,
       fontSize: 11,
       paddingTop: margins.top,
       paddingRight: margins.right,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from '@react-pdf/renderer';
-import type { DividerElement, PDFTheme } from '@/types/pdf';
+import type { DividerElement, PDFTheme } from '@/lib/pdf/schema';
 
 interface Props extends DividerElement {
   theme: PDFTheme;

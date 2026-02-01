@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { HeadingElement, TextAlign } from '@/types/pdf';
+import type { HeadingElement, TextAlign } from '@/lib/pdf/schema';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

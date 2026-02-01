@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import type { HeadingElement, PDFTheme } from '@/types/pdf';
+import type { HeadingElement, PDFTheme } from '@/lib/pdf/schema';
 
 interface HeadingPreviewProps {
   element: HeadingElement;

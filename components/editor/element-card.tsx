@@ -35,7 +35,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { getElementLabel, getElementSummary, type ElementWithId } from '@/lib/editor/element-defaults';
-import type { PDFElement } from '@/types/pdf';
+import type { PDFElement } from '@/lib/pdf/schema';
 
 interface ElementCardProps {
   element: ElementWithId;

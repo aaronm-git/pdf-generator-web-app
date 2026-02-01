@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { ParagraphElement, TextAlign, FontWeight } from '@/types/pdf';
+import type { ParagraphElement, TextAlign, FontWeight } from '@/lib/pdf/schema';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

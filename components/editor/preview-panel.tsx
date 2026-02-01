@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { cn } from '@/lib/utils';
-import type { PDFInstructions } from '@/types/pdf';
+import type { PDFInstructions } from '@/lib/pdf/schema';
 import { ElementPreview } from './preview/element-preview';
 import { getElementLabel, type ElementWithId } from '@/lib/editor/element-defaults';
 
@@ -49,6 +49,14 @@ export const PreviewPanel = forwardRef<PreviewPanelRef, PreviewPanelProps>(funct
     }
   }, [selectedElementId]);
 
+  // Handle clicking outside elements to deselect
+  const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Only deselect if clicking directly on the container, not on a child element
+    if (e.target === e.currentTarget && selectedElementId) {
+      onSelectElement(null);
+    }
+  };
+
   return (
     <div className="flex justify-center">
       <div
@@ -61,6 +69,7 @@ export const PreviewPanel = forwardRef<PreviewPanelRef, PreviewPanelProps>(funct
           aspectRatio: isLandscape ? '1.414 / 1' : '1 / 1.414',
           minHeight: isLandscape ? 'auto' : '800px',
         }}
+        onClick={handleContainerClick}
       >
         {/* Paper with margins */}
         <div
@@ -91,7 +100,10 @@ export const PreviewPanel = forwardRef<PreviewPanelRef, PreviewPanelProps>(funct
                         ? 'ring-2 ring-blue-500 ring-offset-2'
                         : 'hover:ring-2 hover:ring-blue-300 hover:ring-offset-2'
                     )}
-                    onClick={() => onSelectElement(element.id)}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent container click handler from firing
+                      onSelectElement(element.id);
+                    }}
                     onDoubleClick={() => onEditElement?.(element.id)}
                   >
                     {/* Type label tab */}

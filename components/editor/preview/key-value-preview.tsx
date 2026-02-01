@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import type { KeyValueElement, PDFTheme } from '@/types/pdf';
+import type { KeyValueElement, PDFTheme } from '@/lib/pdf/schema';
 
 interface KeyValuePreviewProps {
   element: KeyValueElement;

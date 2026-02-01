@@ -1,6 +1,6 @@
 'use client';
 
-import type { PDFElement } from '@/types/pdf';
+import type { PDFElement } from '@/lib/pdf/schema';
 import {
   Dialog,
   DialogContent,

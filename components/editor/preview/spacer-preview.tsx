@@ -1,6 +1,6 @@
 'use client';
 
-import type { SpacerElement } from '@/types/pdf';
+import type { SpacerElement } from '@/lib/pdf/schema';
 
 interface SpacerPreviewProps {
   element: SpacerElement;

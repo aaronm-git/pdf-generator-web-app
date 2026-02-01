@@ -1,6 +1,6 @@
 'use client';
 
-import type { SectionElement, PDFTheme } from '@/types/pdf';
+import type { SectionElement, PDFTheme } from '@/lib/pdf/schema';
 import { ElementPreview } from './element-preview';
 
 interface SectionPreviewProps {

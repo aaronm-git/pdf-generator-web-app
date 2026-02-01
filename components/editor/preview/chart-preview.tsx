@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import type { BarChartElement, PieChartElement, LineChartElement, PDFTheme } from '@/types/pdf';
+import type { BarChartElement, PieChartElement, LineChartElement, PDFTheme } from '@/lib/pdf/schema';
 
 interface ChartPreviewProps {
   element: BarChartElement | PieChartElement | LineChartElement;

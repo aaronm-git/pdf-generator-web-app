@@ -1,6 +1,6 @@
 'use client';
 
-import type { DividerElement, PDFTheme } from '@/types/pdf';
+import type { DividerElement, PDFTheme } from '@/lib/pdf/schema';
 
 interface DividerPreviewProps {
   element: DividerElement;

@@ -1,7 +1,7 @@
 'use client';
 
 import { ImageIcon } from 'lucide-react';
-import type { ImageElement, PDFTheme } from '@/types/pdf';
+import type { ImageElement, PDFTheme } from '@/lib/pdf/schema';
 
 interface ImagePreviewProps {
   element: ImageElement;

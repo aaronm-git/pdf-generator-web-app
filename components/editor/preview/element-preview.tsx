@@ -1,6 +1,6 @@
 'use client';
 
-import type { PDFElement, PDFTheme } from '@/types/pdf';
+import type { PDFElement, PDFTheme } from '@/lib/pdf/schema';
 import { HeadingPreview } from './heading-preview';
 import { ParagraphPreview } from './paragraph-preview';
 import { ListPreview } from './list-preview';

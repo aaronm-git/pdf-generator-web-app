@@ -1,7 +1,7 @@
 'use client';
 
 import { Info, AlertTriangle, CheckCircle, XCircle, Quote } from 'lucide-react';
-import type { CalloutElement, PDFTheme } from '@/types/pdf';
+import type { CalloutElement, PDFTheme } from '@/lib/pdf/schema';
 import { parseAndRenderMarkdown } from '@/lib/markdown/parser';
 
 interface CalloutPreviewProps {

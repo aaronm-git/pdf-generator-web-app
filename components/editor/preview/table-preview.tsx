@@ -1,6 +1,6 @@
 'use client';
 
-import type { TableElement, PDFTheme } from '@/types/pdf';
+import type { TableElement, PDFTheme } from '@/lib/pdf/schema';
 
 interface TablePreviewProps {
   element: TableElement;

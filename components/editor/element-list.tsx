@@ -2,16 +2,17 @@
 
 import { useEffect, useRef } from 'react';
 import { FileText } from 'lucide-react';
+import type React from 'react';
 
 import { ElementCard } from './element-card';
 import { ElementEditorDialog } from './editors/element-editor-dialog';
 import type { ElementWithId } from '@/lib/editor/element-defaults';
-import type { PDFElement } from '@/types/pdf';
+import type { PDFElement } from '@/lib/pdf/schema';
 
 interface ElementListProps {
   elements: ElementWithId[];
   selectedId: string | null;
-  onSelect: (id: string) => void;
+  onSelect: (id: string | null) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onDuplicate: (id: string) => void;
@@ -61,17 +62,33 @@ export function ElementList({
     );
   }
 
+  // Handle clicking outside elements to deselect
+  const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Only deselect if clicking directly on the container, not on a child element
+    if (e.target === e.currentTarget && selectedId) {
+      onSelect(null);
+    }
+  };
+
   return (
     <>
-      <div ref={containerRef} className="space-y-2 p-4">
-        <div className="mb-4 flex items-center justify-between">
+      <div 
+        ref={containerRef} 
+        className="space-y-2 p-4"
+        onClick={handleContainerClick}
+      >
+        <div className="mb-4 flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
           <h3 className="text-sm font-medium text-muted-foreground">
             Elements ({elements.length})
           </h3>
         </div>
 
         {elements.map((element, index) => (
-          <div key={element.id} data-element-id={element.id}>
+          <div 
+            key={element.id} 
+            data-element-id={element.id}
+            onClick={(e) => e.stopPropagation()}
+          >
             <ElementCard
               element={element}
               isSelected={selectedId === element.id}

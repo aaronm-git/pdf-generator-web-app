@@ -1,6 +1,6 @@
 'use client';
 
-import type { ParagraphElement, PDFTheme } from '@/types/pdf';
+import type { ParagraphElement, PDFTheme } from '@/lib/pdf/schema';
 import { parseAndRenderMarkdown } from '@/lib/markdown/parser';
 
 interface ParagraphPreviewProps {

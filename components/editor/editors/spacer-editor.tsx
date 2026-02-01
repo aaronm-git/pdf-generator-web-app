@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { SpacerElement } from '@/types/pdf';
+import type { SpacerElement } from '@/lib/pdf/schema';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

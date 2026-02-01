@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { PDFMetadata, PDFTheme, PDFPageSettings } from '@/types/pdf';
+import type { PDFMetadata, PDFTheme, PDFPageSettings } from '@/lib/pdf/schema';
 
 interface DocumentSettingsProps {
   metadata: PDFMetadata;

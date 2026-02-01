@@ -1,6 +1,6 @@
 'use client';
 
-import type { ListElement, PDFTheme } from '@/types/pdf';
+import type { ListElement, PDFTheme } from '@/lib/pdf/schema';
 import { parseAndRenderMarkdown } from '@/lib/markdown/parser';
 
 interface ListPreviewProps {

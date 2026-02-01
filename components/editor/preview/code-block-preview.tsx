@@ -1,6 +1,6 @@
 'use client';
 
-import type { CodeBlockElement, PDFTheme } from '@/types/pdf';
+import type { CodeBlockElement, PDFTheme } from '@/lib/pdf/schema';
 
 interface CodeBlockPreviewProps {
   element: CodeBlockElement;

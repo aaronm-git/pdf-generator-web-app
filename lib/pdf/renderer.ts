@@ -1,5 +1,5 @@
 import React from 'react';
-import type { PDFElement, PDFTheme } from '@/types/pdf';
+import type { PDFElement, PDFTheme } from '@/lib/pdf/schema';
 import { PDFHeading } from '@/components/pdf/renderer/typography/heading';
 import { PDFParagraph } from '@/components/pdf/renderer/typography/paragraph';
 import { PDFList } from '@/components/pdf/renderer/typography/list';

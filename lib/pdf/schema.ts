@@ -1,25 +1,25 @@
 import { z } from 'zod';
 
-// Base schemas
-const spacingSchema = z.object({
+// ============ BASE SCHEMAS ============
+export const spacingSchema = z.object({
   top: z.number().optional(),
   right: z.number().optional(),
   bottom: z.number().optional(),
   left: z.number().optional(),
 });
 
-const borderSchema = z.object({
+export const borderSchema = z.object({
   width: z.number().optional(),
   color: z.string().optional(),
   style: z.enum(['solid', 'dashed', 'dotted', 'none']).optional(),
   radius: z.number().optional(),
 });
 
-const fontWeightSchema = z.enum(['normal', 'bold', 'light', 'medium', 'semibold']);
-const textAlignSchema = z.enum(['left', 'center', 'right', 'justify']);
+export const fontWeightSchema = z.enum(['normal', 'bold', 'light', 'medium', 'semibold']);
+export const textAlignSchema = z.enum(['left', 'center', 'right', 'justify']);
 
-// Typography element schemas
-const headingElementSchema = z.object({
+// ============ TYPOGRAPHY ELEMENT SCHEMAS ============
+export const headingElementSchema = z.object({
   type: z.literal('heading'),
   level: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5), z.literal(6)]),
   content: z.string(),
@@ -28,7 +28,7 @@ const headingElementSchema = z.object({
   marginBottom: z.number().optional(),
 });
 
-const paragraphElementSchema = z.object({
+export const paragraphElementSchema = z.object({
   type: z.literal('paragraph'),
   content: z.string(),
   fontSize: z.number().optional(),
@@ -39,7 +39,7 @@ const paragraphElementSchema = z.object({
   marginBottom: z.number().optional(),
 });
 
-const listElementSchema = z.object({
+export const listElementSchema = z.object({
   type: z.literal('list'),
   variant: z.enum(['ordered', 'unordered']),
   items: z.array(z.string()),
@@ -49,14 +49,14 @@ const listElementSchema = z.object({
   marginBottom: z.number().optional(),
 });
 
-const captionElementSchema = z.object({
+export const captionElementSchema = z.object({
   type: z.literal('caption'),
   content: z.string(),
   color: z.string().optional(),
   align: textAlignSchema.optional(),
 });
 
-const calloutElementSchema = z.object({
+export const calloutElementSchema = z.object({
   type: z.literal('callout'),
   content: z.string(),
   variant: z.enum(['info', 'warning', 'success', 'error', 'quote']).optional(),
@@ -64,7 +64,7 @@ const calloutElementSchema = z.object({
   marginBottom: z.number().optional(),
 });
 
-const codeBlockElementSchema = z.object({
+export const codeBlockElementSchema = z.object({
   type: z.literal('codeBlock'),
   code: z.string(),
   language: z.string().optional(),
@@ -72,25 +72,25 @@ const codeBlockElementSchema = z.object({
   marginBottom: z.number().optional(),
 });
 
-// Layout element schemas
-const spacerElementSchema = z.object({
+// ============ LAYOUT ELEMENT SCHEMAS ============
+export const spacerElementSchema = z.object({
   type: z.literal('spacer'),
   height: z.number(),
 });
 
-const dividerElementSchema = z.object({
+export const dividerElementSchema = z.object({
   type: z.literal('divider'),
   color: z.string().optional(),
   thickness: z.number().optional(),
   marginY: z.number().optional(),
 });
 
-const pageBreakElementSchema = z.object({
+export const pageBreakElementSchema = z.object({
   type: z.literal('pageBreak'),
 });
 
-// Data element schemas
-const tableElementSchema = z.object({
+// ============ DATA ELEMENT SCHEMAS ============
+export const tableElementSchema = z.object({
   type: z.literal('table'),
   headers: z.array(z.string()),
   rows: z.array(z.array(z.string())),
@@ -109,7 +109,7 @@ const tableElementSchema = z.object({
   marginBottom: z.number().optional(),
 });
 
-const keyValueElementSchema = z.object({
+export const keyValueElementSchema = z.object({
   type: z.literal('keyValue'),
   items: z.array(z.object({
     key: z.string(),
@@ -127,14 +127,14 @@ const keyValueElementSchema = z.object({
   marginBottom: z.number().optional(),
 });
 
-// Chart element schemas
-const chartDataPointSchema = z.object({
+// ============ CHART ELEMENT SCHEMAS ============
+export const chartDataPointSchema = z.object({
   label: z.string(),
   value: z.number(),
   color: z.string().optional(),
 });
 
-const barChartElementSchema = z.object({
+export const barChartElementSchema = z.object({
   type: z.literal('barChart'),
   title: z.string().optional(),
   data: z.array(chartDataPointSchema),
@@ -147,7 +147,7 @@ const barChartElementSchema = z.object({
   marginBottom: z.number().optional(),
 });
 
-const lineChartElementSchema = z.object({
+export const lineChartElementSchema = z.object({
   type: z.literal('lineChart'),
   title: z.string().optional(),
   data: z.array(z.object({
@@ -165,7 +165,7 @@ const lineChartElementSchema = z.object({
   marginBottom: z.number().optional(),
 });
 
-const pieChartElementSchema = z.object({
+export const pieChartElementSchema = z.object({
   type: z.literal('pieChart'),
   title: z.string().optional(),
   data: z.array(chartDataPointSchema),
@@ -178,8 +178,8 @@ const pieChartElementSchema = z.object({
   marginBottom: z.number().optional(),
 });
 
-// Media element schemas
-const imageElementSchema = z.object({
+// ============ MEDIA ELEMENT SCHEMAS ============
+export const imageElementSchema = z.object({
   type: z.literal('image'),
   src: z.string(),
   alt: z.string().optional(),
@@ -189,7 +189,7 @@ const imageElementSchema = z.object({
   marginBottom: z.number().optional(),
 });
 
-// Base element schema (without recursive types)
+// ============ BASE ELEMENT SCHEMA (non-recursive) ============
 const baseElementSchema = z.discriminatedUnion('type', [
   headingElementSchema,
   paragraphElementSchema,
@@ -208,8 +208,8 @@ const baseElementSchema = z.discriminatedUnion('type', [
   imageElementSchema,
 ]);
 
-// Section and columns need to be defined with lazy for recursion
-const sectionElementSchema: z.ZodType<{
+// ============ RECURSIVE ELEMENT SCHEMAS ============
+export const sectionElementSchema: z.ZodType<{
   type: 'section';
   title?: string;
   children: z.infer<typeof pdfElementSchema>[];
@@ -227,7 +227,7 @@ const sectionElementSchema: z.ZodType<{
   border: borderSchema.optional(),
 });
 
-const columnsElementSchema: z.ZodType<{
+export const columnsElementSchema: z.ZodType<{
   type: 'columns';
   columns: {
     width: number;
@@ -245,7 +245,7 @@ const columnsElementSchema: z.ZodType<{
   marginBottom: z.number().optional(),
 });
 
-// Combined element schema
+// ============ COMBINED ELEMENT SCHEMA ============
 export const pdfElementSchema: z.ZodType<
   | z.infer<typeof baseElementSchema>
   | z.infer<typeof sectionElementSchema>
@@ -256,8 +256,8 @@ export const pdfElementSchema: z.ZodType<
   columnsElementSchema,
 ]);
 
-// Document structure schemas
-const pdfMetadataSchema = z.object({
+// ============ DOCUMENT STRUCTURE SCHEMAS ============
+export const pdfMetadataSchema = z.object({
   title: z.string(),
   author: z.string().optional(),
   subject: z.string().optional(),
@@ -265,13 +265,13 @@ const pdfMetadataSchema = z.object({
   createdAt: z.string().optional(),
 });
 
-const pdfPageSettingsSchema = z.object({
+export const pdfPageSettingsSchema = z.object({
   size: z.enum(['A4', 'LETTER', 'LEGAL', 'TABLOID']).optional(),
   orientation: z.enum(['portrait', 'landscape']).optional(),
   margins: spacingSchema.optional(),
 });
 
-const pdfThemeSchema = z.object({
+export const pdfThemeSchema = z.object({
   primaryColor: z.string().optional(),
   secondaryColor: z.string().optional(),
   accentColor: z.string().optional(),
@@ -281,13 +281,13 @@ const pdfThemeSchema = z.object({
   fontFamily: z.string().optional(),
 });
 
-const pdfHeaderSchema = z.object({
+export const pdfHeaderSchema = z.object({
   enabled: z.boolean(),
   content: z.array(pdfElementSchema).optional(),
   height: z.number().optional(),
 });
 
-const pdfFooterSchema = z.object({
+export const pdfFooterSchema = z.object({
   enabled: z.boolean(),
   content: z.array(pdfElementSchema).optional(),
   showPageNumbers: z.boolean().optional(),
@@ -295,7 +295,6 @@ const pdfFooterSchema = z.object({
   height: z.number().optional(),
 });
 
-// Main PDF instructions schema
 export const pdfInstructionsSchema = z.object({
   metadata: pdfMetadataSchema,
   pageSettings: pdfPageSettingsSchema.optional(),
@@ -305,4 +304,36 @@ export const pdfInstructionsSchema = z.object({
   content: z.array(pdfElementSchema),
 });
 
-export type PDFInstructionsInput = z.infer<typeof pdfInstructionsSchema>;
+// ============ INFERRED TYPES (Single Source of Truth) ============
+export type FontWeight = z.infer<typeof fontWeightSchema>;
+export type TextAlign = z.infer<typeof textAlignSchema>;
+export type BorderStyle = z.infer<typeof borderSchema>['style'];
+export type Spacing = z.infer<typeof spacingSchema>;
+export type Border = z.infer<typeof borderSchema>;
+
+export type HeadingElement = z.infer<typeof headingElementSchema>;
+export type ParagraphElement = z.infer<typeof paragraphElementSchema>;
+export type ListElement = z.infer<typeof listElementSchema>;
+export type CaptionElement = z.infer<typeof captionElementSchema>;
+export type CalloutElement = z.infer<typeof calloutElementSchema>;
+export type CodeBlockElement = z.infer<typeof codeBlockElementSchema>;
+export type SpacerElement = z.infer<typeof spacerElementSchema>;
+export type DividerElement = z.infer<typeof dividerElementSchema>;
+export type PageBreakElement = z.infer<typeof pageBreakElementSchema>;
+export type TableElement = z.infer<typeof tableElementSchema>;
+export type KeyValueElement = z.infer<typeof keyValueElementSchema>;
+export type ChartDataPoint = z.infer<typeof chartDataPointSchema>;
+export type BarChartElement = z.infer<typeof barChartElementSchema>;
+export type LineChartElement = z.infer<typeof lineChartElementSchema>;
+export type PieChartElement = z.infer<typeof pieChartElementSchema>;
+export type ImageElement = z.infer<typeof imageElementSchema>;
+export type SectionElement = z.infer<typeof sectionElementSchema>;
+export type ColumnsElement = z.infer<typeof columnsElementSchema>;
+
+export type PDFElement = z.infer<typeof pdfElementSchema>;
+export type PDFMetadata = z.infer<typeof pdfMetadataSchema>;
+export type PDFPageSettings = z.infer<typeof pdfPageSettingsSchema>;
+export type PDFTheme = z.infer<typeof pdfThemeSchema>;
+export type PDFHeader = z.infer<typeof pdfHeaderSchema>;
+export type PDFFooter = z.infer<typeof pdfFooterSchema>;
+export type PDFInstructions = z.infer<typeof pdfInstructionsSchema>;

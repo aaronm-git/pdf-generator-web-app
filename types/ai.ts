@@ -1,4 +1,4 @@
-import { PDFInstructions } from './pdf';
+import type { PDFInstructions } from '@/lib/pdf/schema';
 
 export interface GenerateRequest {
   prompt: string;

@@ -1,13 +1,14 @@
 import React from 'react';
-import { Text, Link, StyleSheet } from '@react-pdf/renderer';
+import { Text, Link } from '@react-pdf/renderer';
 import { parseInlineMarkdown, type RichTextNode } from './parser';
 
-const styles = StyleSheet.create({
+// Use inline styles to avoid module-level StyleSheet.create timing issues
+const inlineStyles = {
   bold: {
-    fontWeight: 'bold',
+    fontWeight: 'bold' as const,
   },
   italic: {
-    fontStyle: 'italic',
+    fontStyle: 'italic' as const,
   },
   code: {
     fontFamily: 'Courier',
@@ -15,13 +16,13 @@ const styles = StyleSheet.create({
     fontSize: 10,
   },
   strikethrough: {
-    textDecoration: 'line-through',
+    textDecoration: 'line-through' as const,
   },
   link: {
     color: '#3182ce',
-    textDecoration: 'underline',
+    textDecoration: 'underline' as const,
   },
-});
+};
 
 /**
  * Render a single rich text node to PDF elements
@@ -30,35 +31,35 @@ function renderNode(node: RichTextNode, key: number): React.ReactNode {
   switch (node.type) {
     case 'bold':
       return (
-        <Text key={key} style={styles.bold}>
+        <Text key={key} style={inlineStyles.bold}>
           {node.content}
         </Text>
       );
 
     case 'italic':
       return (
-        <Text key={key} style={styles.italic}>
+        <Text key={key} style={inlineStyles.italic}>
           {node.content}
         </Text>
       );
 
     case 'code':
       return (
-        <Text key={key} style={styles.code}>
+        <Text key={key} style={inlineStyles.code}>
           {node.content}
         </Text>
       );
 
     case 'strikethrough':
       return (
-        <Text key={key} style={styles.strikethrough}>
+        <Text key={key} style={inlineStyles.strikethrough}>
           {node.content}
         </Text>
       );
 
     case 'link':
       return (
-        <Link key={key} src={node.href || ''} style={styles.link}>
+        <Link key={key} src={node.href || ''} style={inlineStyles.link}>
           {node.content}
         </Link>
       );

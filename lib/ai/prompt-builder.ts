@@ -14,12 +14,13 @@ export function buildSystemPrompt(_options?: PromptOptions): string {
 3. Choose colors that are professional and readable when printed
 4. Include appropriate spacing between sections (marginBottom: 15-30)
 5. Text in paragraphs, lists, callouts supports inline markdown: **bold**, *italic*, \`code\`, [links](url)
-6. Use callouts for important information:
-   - "info" (blue) - tips, notes
-   - "warning" (yellow) - cautions
-   - "success" (green) - positive outcomes
-   - "error" (red) - critical issues
-   - "quote" (gray) - blockquotes
+6. Use callout elements (type: "callout") for important information with appropriate variants:
+   - variant: "info" (blue) - tips, notes, general information
+   - variant: "warning" (yellow) - cautions, warnings
+   - variant: "success" (green) - positive outcomes, completions
+   - variant: "error" (red) - critical issues, errors
+   - variant: "quote" (gray) - blockquotes, citations
+   Example: { type: "callout", variant: "info", content: "Important note here" }
 7. Use codeBlock for code snippets with language specified
 8. Use charts when visualizing data adds value:
    - barChart: comparing categories

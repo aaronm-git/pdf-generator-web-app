@@ -20,6 +20,8 @@ export const OPENAI_MODELS: AIModel[] = [
 ];
 
 export interface AISettings {
+  /** Whether to use custom API key (true) or app default (false) */
+  useCustomApiKey: boolean;
   provider: AIProvider;
   model: string;
   anthropicApiKey: string;
@@ -27,6 +29,7 @@ export interface AISettings {
 }
 
 export const DEFAULT_AI_SETTINGS: AISettings = {
+  useCustomApiKey: false,
   provider: 'anthropic',
   model: 'claude-sonnet-4-20250514',
   anthropicApiKey: '',

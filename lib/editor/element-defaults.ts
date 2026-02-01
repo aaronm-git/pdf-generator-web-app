@@ -15,7 +15,7 @@ import type {
   CalloutElement,
   CodeBlockElement,
   ImageElement,
-} from '@/types/pdf';
+} from '@/lib/pdf/schema';
 
 export type ElementType = PDFElement['type'];
 

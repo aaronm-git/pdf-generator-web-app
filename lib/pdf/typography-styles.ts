@@ -1,5 +1,5 @@
 import { StyleSheet } from '@react-pdf/renderer';
-import type { PDFTheme } from '@/types/pdf';
+import type { PDFTheme } from '@/lib/pdf/schema';
 
 export const createTypographyStyles = (theme: PDFTheme) =>
   StyleSheet.create({

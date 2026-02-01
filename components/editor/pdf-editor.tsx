@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, forwardRef, useImperativeHandle, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Download, Eye, Loader2, RotateCcw, Save } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -15,7 +15,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { usePDFEditor } from '@/hooks/use-pdf-editor';
+import { useEditorStore, useUIStore } from '@/lib/store';
+import {
+  useCreateDocument,
+  useUpdateDocument,
+  useAddDBHistoryEntry,
+} from '@/lib/swr';
 import { EditorToolbar } from './editor-toolbar';
 import { ElementList } from './element-list';
 import { PreviewPanel, type PreviewPanelRef } from './preview-panel';
@@ -23,51 +28,81 @@ import { DocumentSettings } from './document-settings';
 import { JsonEditorDialog } from './json-editor-dialog';
 import { SaveDocumentDialog } from './save-document-dialog';
 import { captureThumbnail, uploadThumbnail } from '@/lib/utils/thumbnail';
-import type { PDFElement, PDFInstructions } from '@/types/pdf';
-import type { SavedDocument } from '@/types/document';
+import type { PDFElement } from '@/lib/pdf/schema';
 
-export interface PDFEditorRef {
-  loadInstructions: (instructions: PDFInstructions) => void;
-  setDocument: (document: SavedDocument) => void;
-  reset: () => void;
-}
+export function PDFEditor() {
+  const previewRef = useRef<PreviewPanelRef>(null);
 
-interface PDFEditorProps {
-  initialDocumentId?: string;
-}
+  // Editor Store
+  const entity = useEditorStore((s) => s.entity);
+  const selectedElementId = useEditorStore((s) => s.selectedElementId);
+  const isGenerating = useEditorStore((s) => s.isGenerating);
+  const error = useEditorStore((s) => s.error);
 
-export const PDFEditor = forwardRef<PDFEditorRef, PDFEditorProps>(
-  function PDFEditor({ initialDocumentId }, ref) {
-    const editor = usePDFEditor();
-    const previewRef = useRef<PreviewPanelRef>(null);
-    const [editingElement, setEditingElement] = useState<{
-      id: string;
-      element: PDFElement;
-    } | null>(null);
-    const [showClearConfirm, setShowClearConfirm] = useState(false);
-    const [showSaveDialog, setShowSaveDialog] = useState(false);
-    const [currentDocumentId, setCurrentDocumentId] = useState<string | null>(
-      initialDocumentId || null
-    );
-    const [currentDocument, setCurrentDocument] = useState<SavedDocument | null>(null);
-    const [isCapturingThumbnail, setIsCapturingThumbnail] = useState(false);
+  // Editor Store actions
+  const selectElement = useEditorStore((s) => s.selectElement);
+  const addElement = useEditorStore((s) => s.addElement);
+  const updateElement = useEditorStore((s) => s.updateElement);
+  const removeElement = useEditorStore((s) => s.removeElement);
+  const duplicateElement = useEditorStore((s) => s.duplicateElement);
+  const moveElementUp = useEditorStore((s) => s.moveElementUp);
+  const moveElementDown = useEditorStore((s) => s.moveElementDown);
+  const getElementById = useEditorStore((s) => s.getElementById);
+  const getElementsWithIds = useEditorStore((s) => s.getElementsWithIds);
+  const updateMetadata = useEditorStore((s) => s.updateMetadata);
+  const updateTheme = useEditorStore((s) => s.updateTheme);
+  const updatePageSettings = useEditorStore((s) => s.updatePageSettings);
+  const loadInstructions = useEditorStore((s) => s.loadInstructions);
+  const downloadPDF = useEditorStore((s) => s.downloadPDF);
+  const previewPDF = useEditorStore((s) => s.previewPDF);
+  const markAsSaved = useEditorStore((s) => s.markAsSaved);
+  const createNewEntity = useEditorStore((s) => s.createNewEntity);
 
-    // Expose methods via ref
-    useImperativeHandle(
-      ref,
-      () => ({
-        loadInstructions: editor.loadInstructions,
-        setDocument: (document: SavedDocument) => {
-          setCurrentDocument(document);
-          setCurrentDocumentId(document.id);
-        },
-        reset: editor.reset,
-      }),
-      [editor.loadInstructions, editor.reset]
-    );
+  // UI Store
+  const isSaveDialogOpen = useUIStore((s) => s.isSaveDialogOpen);
+  const openSaveDialog = useUIStore((s) => s.openSaveDialog);
+  const closeSaveDialog = useUIStore((s) => s.closeSaveDialog);
+
+  // SWR Mutations
+  const { createDocument } = useCreateDocument();
+  const { updateDocument } = useUpdateDocument();
+  const { addEntry: addDBHistoryEntry } = useAddDBHistoryEntry();
+
+  // Local state
+  const [editingElement, setEditingElement] = useState<{
+    id: string;
+    element: PDFElement;
+  } | null>(null);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [isCapturingThumbnail, setIsCapturingThumbnail] = useState(false);
+
+  // Get elements with IDs for the list
+  const elements = getElementsWithIds();
+
+  // Get instructions from entity
+  const instructions = entity?.instructions;
+
+  // Deselect when clicking outside the preview panel
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const previewElement = previewRef.current?.getPreviewElement();
+      if (
+        previewElement &&
+        selectedElementId &&
+        !previewElement.contains(event.target as Node)
+      ) {
+        selectElement(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [selectedElementId, selectElement]);
 
   const handleEditElement = (id: string) => {
-    const element = editor.getElementById(id);
+    const element = getElementById(id);
     if (element) {
       setEditingElement({ id, element });
     }
@@ -75,7 +110,7 @@ export const PDFEditor = forwardRef<PDFEditorRef, PDFEditorProps>(
 
   const handleSaveElement = (element: PDFElement) => {
     if (editingElement) {
-      editor.updateElement(editingElement.id, element);
+      updateElement(editingElement.id, element);
       setEditingElement(null);
     }
   };
@@ -85,25 +120,32 @@ export const PDFEditor = forwardRef<PDFEditorRef, PDFEditorProps>(
   };
 
   const handleStartOver = () => {
-    if (editor.elements.length > 0) {
+    if (elements.length > 0) {
       setShowClearConfirm(true);
     }
   };
 
   const confirmStartOver = () => {
-    editor.reset();
-    setCurrentDocument(null);
-    setCurrentDocumentId(null);
+    // Create a brand new entity
+    createNewEntity();
     setShowClearConfirm(false);
   };
 
   // Handle saving document with thumbnail
   const handleSaveDocument = useCallback(
-    async (name: string, instructions: PDFInstructions) => {
+    async (name: string) => {
+      if (!entity || !instructions) return;
+
       setIsCapturingThumbnail(true);
       let thumbnailUrl: string | undefined;
 
       try {
+        // Deselect any selected element before capturing thumbnail
+        selectElement(null);
+
+        // Small delay to ensure deselection is rendered
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
         // Capture thumbnail from preview panel
         const previewElement = previewRef.current?.getPreviewElement();
         if (previewElement) {
@@ -113,101 +155,134 @@ export const PDFEditor = forwardRef<PDFEditorRef, PDFEditorProps>(
           });
 
           // Upload thumbnail to Vercel Blob
-          thumbnailUrl = await uploadThumbnail(base64Image, `${name}-${Date.now()}.png`);
-        } else {
-          console.warn('Preview element not available for thumbnail capture');
+          thumbnailUrl = await uploadThumbnail(
+            base64Image,
+            `${name}-${Date.now()}.png`
+          );
         }
-      } catch (error) {
-        console.error('Failed to capture/upload thumbnail:', error);
+      } catch (err) {
+        console.error('Failed to capture/upload thumbnail:', err);
         // Continue without thumbnail rather than failing the save
       } finally {
         setIsCapturingThumbnail(false);
       }
 
       // Determine if updating or creating
-      const isUpdate = currentDocumentId || currentDocument;
-      const documentId = currentDocumentId || currentDocument?.id;
+      const isUpdate = entity.origin.type === 'db';
+      const documentId = entity.origin.type === 'db' ? entity.origin.documentId : null;
 
-      // Save document with thumbnail URL
-      const response = await fetch(
-        isUpdate ? `/api/documents/${documentId}` : '/api/documents',
-        {
-          method: isUpdate ? 'PUT' : 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+      try {
+        if (isUpdate && documentId) {
+          await updateDocument({
+            id: documentId,
+            updates: {
+              name,
+              instructions,
+              thumbnail: thumbnailUrl,
+            },
+          });
+          markAsSaved(documentId);
+        } else {
+          const result = await createDocument({
             name,
             instructions,
             thumbnail: thumbnailUrl,
-          }),
+          });
+          if (result?.document) {
+            markAsSaved(result.document.id);
+          }
         }
-      );
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to save document');
+        closeSaveDialog();
+        toast.success(isUpdate ? 'Document updated' : 'Document saved', {
+          description: `"${name}" has been saved to your documents.`,
+        });
+      } catch (err) {
+        console.error('Failed to save document:', err);
+        toast.error('Failed to save document');
       }
-
-      const data = await response.json();
-      setCurrentDocument(data.document);
-      setCurrentDocumentId(data.document.id);
-
-      toast.success(isUpdate ? 'Document updated' : 'Document saved', {
-        description: `"${name}" has been saved to your documents.`,
-      });
     },
-    [currentDocumentId, currentDocument]
+    [
+      entity,
+      instructions,
+      selectElement,
+      updateDocument,
+      createDocument,
+      markAsSaved,
+      closeSaveDialog,
+    ]
   );
 
   // Handle download with history logging
   const handleDownloadPDF = useCallback(async () => {
-    try {
-      await editor.downloadPDF();
+    if (!entity || !instructions) return;
 
-      // Capture and upload thumbnail for history
-      let thumbnailUrl: string | undefined;
+    try {
+      // Deselect any selected element before capturing thumbnail
+      selectElement(null);
+
+      // Small delay to ensure deselection is rendered
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      await downloadPDF();
+
+      // Capture thumbnail as base64 for history
+      let thumbnailBase64: string | undefined;
       try {
         const previewElement = previewRef.current?.getPreviewElement();
         if (previewElement) {
-          const base64Image = await captureThumbnail(previewElement, {
+          thumbnailBase64 = await captureThumbnail(previewElement, {
             width: 300,
             height: 400,
           });
-          thumbnailUrl = await uploadThumbnail(base64Image, `history-${Date.now()}.png`);
         }
       } catch (thumbError) {
         console.error('Failed to capture thumbnail for history:', thumbError);
-        // Continue without thumbnail
       }
 
-      // Log to history
-      await fetch('/api/history', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'downloaded',
-          documentName: currentDocument?.name || editor.instructions.metadata.title || undefined,
-          instructions: editor.instructions,
-          thumbnail: thumbnailUrl,
-        }),
+      // Log to DB history
+      await addDBHistoryEntry({
+        type: 'downloaded',
+        documentName: entity.name || instructions.metadata.title || undefined,
+        instructions,
+        thumbnail: thumbnailBase64,
       });
-    } catch (error) {
-      // Error handling is done in the editor hook
-      console.error('Failed to download PDF:', error);
+    } catch (err) {
+      console.error('Failed to download PDF:', err);
     }
-  }, [editor, currentDocument]);
+  }, [entity, instructions, selectElement, downloadPDF, addDBHistoryEntry]);
+
+  // Don't render if no entity
+  if (!entity || !instructions) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <p className="text-muted-foreground">Loading editor...</p>
+      </div>
+    );
+  }
+
+  const isUpdate = entity.origin.type === 'db';
 
   return (
     <div className="flex h-full flex-col">
       {/* Toolbar */}
-      <div className="flex items-center justify-between border-b p-4">
-        <EditorToolbar onAddElement={editor.addElement} />
+      <div
+        className="flex items-center justify-between border-b p-4"
+        onClick={() => selectElement(null)}
+      >
+        <div onClick={(e) => e.stopPropagation()}>
+          <EditorToolbar onAddElement={addElement} />
+        </div>
 
-        <div className="flex items-center gap-2">
+        <div
+          className="flex items-center gap-2"
+          onClick={(e) => e.stopPropagation()}
+        >
           <Button
             variant="outline"
             size="sm"
             onClick={handleStartOver}
-            disabled={editor.isGenerating || editor.elements.length === 0}
+            disabled={isGenerating || elements.length === 0}
           >
             <RotateCcw className="mr-2 size-4" />
             Start Over
@@ -216,39 +291,43 @@ export const PDFEditor = forwardRef<PDFEditorRef, PDFEditorProps>(
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setShowSaveDialog(true)}
-            disabled={editor.isGenerating || editor.elements.length === 0 || isCapturingThumbnail}
+            onClick={openSaveDialog}
+            disabled={isGenerating || elements.length === 0 || isCapturingThumbnail}
           >
             {isCapturingThumbnail ? (
               <Loader2 className="mr-2 size-4 animate-spin" />
             ) : (
               <Save className="mr-2 size-4" />
             )}
-            {currentDocumentId || currentDocument ? 'Save' : 'Save As'}
+            {isUpdate ? 'Save' : 'Save As'}
           </Button>
 
-          <DocumentSettings
-            metadata={editor.instructions.metadata}
-            theme={editor.instructions.theme}
-            pageSettings={editor.instructions.pageSettings}
-            onUpdateMetadata={editor.updateMetadata}
-            onUpdateTheme={editor.updateTheme}
-            onUpdatePageSettings={editor.updatePageSettings}
-          />
+          <div onClick={(e) => e.stopPropagation()}>
+            <DocumentSettings
+              metadata={instructions.metadata}
+              theme={instructions.theme}
+              pageSettings={instructions.pageSettings}
+              onUpdateMetadata={updateMetadata}
+              onUpdateTheme={updateTheme}
+              onUpdatePageSettings={updatePageSettings}
+            />
+          </div>
 
-          <JsonEditorDialog
-            instructions={editor.instructions}
-            onApply={editor.loadInstructions}
-            disabled={editor.isGenerating}
-          />
+          <div onClick={(e) => e.stopPropagation()}>
+            <JsonEditorDialog
+              instructions={instructions}
+              onApply={loadInstructions}
+              disabled={isGenerating}
+            />
+          </div>
 
           <Button
             variant="outline"
             size="sm"
-            onClick={editor.previewPDF}
-            disabled={editor.isGenerating || editor.elements.length === 0}
+            onClick={previewPDF}
+            disabled={isGenerating || elements.length === 0}
           >
-            {editor.isGenerating ? (
+            {isGenerating ? (
               <Loader2 className="mr-2 size-4 animate-spin" />
             ) : (
               <Eye className="mr-2 size-4" />
@@ -259,9 +338,9 @@ export const PDFEditor = forwardRef<PDFEditorRef, PDFEditorProps>(
           <Button
             size="sm"
             onClick={handleDownloadPDF}
-            disabled={editor.isGenerating || editor.elements.length === 0}
+            disabled={isGenerating || elements.length === 0}
           >
-            {editor.isGenerating ? (
+            {isGenerating ? (
               <Loader2 className="mr-2 size-4 animate-spin" />
             ) : (
               <Download className="mr-2 size-4" />
@@ -272,18 +351,24 @@ export const PDFEditor = forwardRef<PDFEditorRef, PDFEditorProps>(
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden">
+      <div
+        className="flex flex-1 overflow-hidden"
+        onClick={() => selectElement(null)}
+      >
         {/* Element List */}
-        <div className="w-[400px] shrink-0 overflow-auto border-r">
+        <div
+          className="w-[400px] shrink-0 overflow-auto border-r"
+          onClick={(e) => e.stopPropagation()}
+        >
           <ElementList
-            elements={editor.elements}
-            selectedId={editor.selectedElementId}
-            onSelect={editor.selectElement}
+            elements={elements}
+            selectedId={selectedElementId}
+            onSelect={selectElement}
             onEdit={handleEditElement}
-            onDelete={editor.removeElement}
-            onDuplicate={editor.duplicateElement}
-            onMoveUp={editor.moveElementUp}
-            onMoveDown={editor.moveElementDown}
+            onDelete={removeElement}
+            onDuplicate={duplicateElement}
+            onMoveUp={moveElementUp}
+            onMoveDown={moveElementDown}
             editingElement={editingElement}
             onSaveElement={handleSaveElement}
             onCancelEdit={handleCancelEdit}
@@ -294,19 +379,19 @@ export const PDFEditor = forwardRef<PDFEditorRef, PDFEditorProps>(
         <div className="flex-1 overflow-auto bg-muted/30 p-6">
           <PreviewPanel
             ref={previewRef}
-            instructions={editor.instructions}
-            elements={editor.elements}
-            selectedElementId={editor.selectedElementId}
-            onSelectElement={editor.selectElement}
+            instructions={instructions}
+            elements={elements}
+            selectedElementId={selectedElementId}
+            onSelectElement={selectElement}
             onEditElement={handleEditElement}
           />
         </div>
       </div>
 
       {/* Error Toast */}
-      {editor.error && (
+      {error && (
         <div className="absolute bottom-4 right-4 rounded-md bg-destructive p-4 text-destructive-foreground">
-          {editor.error}
+          {error}
         </div>
       )}
 
@@ -322,7 +407,7 @@ export const PDFEditor = forwardRef<PDFEditorRef, PDFEditorProps>(
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={confirmStartOver}>
+            <AlertDialogAction onClick={confirmStartOver}>
               Start Over
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -331,14 +416,15 @@ export const PDFEditor = forwardRef<PDFEditorRef, PDFEditorProps>(
 
       {/* Save Document Dialog */}
       <SaveDocumentDialog
-        open={showSaveDialog}
-        onOpenChange={setShowSaveDialog}
-        instructions={editor.instructions}
+        open={isSaveDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) closeSaveDialog();
+        }}
+        instructions={instructions}
         onSave={handleSaveDocument}
-        initialName={currentDocument?.name}
-        isUpdate={!!(currentDocumentId || currentDocument)}
+        initialName={entity.name}
+        isUpdate={isUpdate}
       />
     </div>
   );
 }
-);

@@ -26,13 +26,13 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { usePDFGeneration } from '@/hooks/use-pdf-generation';
-import { useInstructions } from '@/contexts/instructions-context';
+import { useEditorStore, useUIStore } from '@/lib/store';
+import { useAddDBHistoryEntry } from '@/lib/swr';
 
 const promptSchema = z.object({
   prompt: z
     .string()
     .min(10, 'Please provide more detail about the PDF you want to create'),
-    // .max(4000, 'Prompt is too long'),
 });
 
 type PromptFormValues = z.infer<typeof promptSchema>;
@@ -51,7 +51,16 @@ const examplePrompts = [
 export function AIPromptModal({ open, onOpenChange }: AIPromptModalProps) {
   const router = useRouter();
   const { generate, status, error, reset } = usePDFGeneration();
-  const { setPendingInstructions } = useInstructions();
+
+  // Stores
+  const entity = useEditorStore((s) => s.entity);
+  const createNewEntity = useEditorStore((s) => s.createNewEntity);
+  const loadInstructions = useEditorStore((s) => s.loadInstructions);
+  const hasUnsavedWork = useEditorStore((s) => s.hasUnsavedWork);
+  const showUnsavedChangesModal = useUIStore((s) => s.showUnsavedChangesModal);
+
+  // SWR mutation for history
+  const { addEntry: addDBHistoryEntry } = useAddDBHistoryEntry();
 
   const form = useForm<PromptFormValues>({
     resolver: zodResolver(promptSchema),
@@ -64,18 +73,37 @@ export function AIPromptModal({ open, onOpenChange }: AIPromptModalProps) {
     try {
       const instructions = await generate(data.prompt);
 
-      // Store instructions in context
-      setPendingInstructions(instructions);
+      const performLoad = () => {
+        // Create a new entity with the generated instructions
+        createNewEntity(instructions.metadata.title || 'AI Generated');
+        loadInstructions(instructions);
 
-      // Close modal and navigate to editor
-      onOpenChange(false);
-      router.push('/editor');
+        // Add to DB history
+        addDBHistoryEntry({
+          type: 'ai-generated',
+          prompt: data.prompt,
+          instructions,
+        });
 
-      // Reset form after navigation
-      setTimeout(() => {
-        form.reset();
-        reset();
-      }, 200);
+        // Close modal and navigate to editor
+        onOpenChange(false);
+        router.push('/editor');
+
+        // Reset form after navigation
+        setTimeout(() => {
+          form.reset();
+          reset();
+        }, 200);
+      };
+
+      // Check for unsaved changes
+      if (entity && hasUnsavedWork()) {
+        // Close modal first so the unsaved changes modal can appear
+        onOpenChange(false);
+        showUnsavedChangesModal(entity.name, performLoad);
+      } else {
+        performLoad();
+      }
     } catch {
       // Error is handled in the hook
     }
@@ -119,7 +147,7 @@ export function AIPromptModal({ open, onOpenChange }: AIPromptModalProps) {
                   <FormControl>
                     <Textarea
                       placeholder="Create a quarterly sales report with a bar chart showing revenue by region, a table of monthly figures, and an executive summary section..."
-                      className="min-h-[200px] max-h-[400px] resize-none overflow-y-auto"
+                      className="max-h-[400px] min-h-[200px] resize-none overflow-y-auto"
                       disabled={isLoading}
                       {...field}
                     />
@@ -135,9 +163,7 @@ export function AIPromptModal({ open, onOpenChange }: AIPromptModalProps) {
             />
 
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">
-                Example prompts:
-              </p>
+              <p className="text-sm text-muted-foreground">Example prompts:</p>
               <div className="flex flex-wrap gap-2">
                 {examplePrompts.map((example, index) => (
                   <Button

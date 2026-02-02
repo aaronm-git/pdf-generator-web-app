@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sql, getCurrentUserId } from '@/lib/db';
+import { query, getCurrentUserId } from '@/lib/db';
 import { generateId } from '@/lib/utils/id';
 import type { DocumentRow, CreateDocumentInput } from '@/types/document';
 import { documentRowToSavedDocument } from '@/types/document';
@@ -12,11 +12,11 @@ export async function GET() {
   try {
     const userId = await getCurrentUserId();
 
-    const rows = await sql`
+    const rows = await query<DocumentRow>`
       SELECT * FROM documents
       WHERE user_id = ${userId}
       ORDER BY updated_at DESC
-    ` as DocumentRow[];
+    `;
 
     const documents = rows.map(documentRowToSavedDocument);
 
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     const id = generateId();
     const now = new Date().toISOString();
 
-    const rows = await sql`
+    const rows = await query<DocumentRow>`
       INSERT INTO documents (id, user_id, name, instructions, thumbnail, favorite, created_at, updated_at)
       VALUES (
         ${id},
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
         ${now}
       )
       RETURNING *
-    ` as DocumentRow[];
+    `;
 
     const document = documentRowToSavedDocument(rows[0]);
 

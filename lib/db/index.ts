@@ -32,5 +32,28 @@ export async function getSession() {
   return session;
 }
 
-// Re-export sql for use in API routes
+/**
+ * Execute a query returning typed rows.
+ * Centralizes the type assertion at the library boundary.
+ */
+export async function query<T>(
+  strings: TemplateStringsArray,
+  ...params: unknown[]
+): Promise<T[]> {
+  return sql(strings, ...params) as Promise<T[]>;
+}
+
+/**
+ * Execute a query returning first row or undefined.
+ * Useful for queries that should return at most one result.
+ */
+export async function queryOne<T>(
+  strings: TemplateStringsArray,
+  ...params: unknown[]
+): Promise<T | undefined> {
+  const rows = (await sql(strings, ...params)) as T[];
+  return rows[0];
+}
+
+// Re-export sql for use in API routes (for non-typed queries like DELETE)
 export { sql };

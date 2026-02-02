@@ -1,4 +1,4 @@
-import { sql } from '@/lib/db';
+import { queryOne } from '@/lib/db';
 import { decrypt } from '@/lib/utils/encryption';
 
 interface UserSettingsRow {
@@ -29,15 +29,13 @@ export async function getUserSettings(
   userId: string
 ): Promise<DecryptedUserSettings | null> {
   try {
-    const rows = await sql`
+    const settings = await queryOne<UserSettingsRow>`
       SELECT * FROM user_settings WHERE user_id = ${userId}
-    ` as UserSettingsRow[];
+    `;
 
-    if (rows.length === 0) {
+    if (!settings) {
       return null;
     }
-
-    const settings = rows[0];
 
     let anthropicApiKey: string | null = null;
     let openaiApiKey: string | null = null;

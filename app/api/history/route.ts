@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sql, getCurrentUserId } from '@/lib/db';
+import { query, sql, getCurrentUserId } from '@/lib/db';
 import { generateId } from '@/lib/utils/id';
 import type { HistoryRow, CreateHistoryInput } from '@/types/document';
 import { historyRowToHistoryEntry } from '@/types/document';
@@ -16,12 +16,12 @@ export async function GET() {
   try {
     const userId = await getCurrentUserId();
 
-    const rows = await sql`
+    const rows = await query<HistoryRow>`
       SELECT * FROM history
       WHERE user_id = ${userId}
       ORDER BY created_at DESC
       LIMIT ${MAX_HISTORY_ENTRIES}
-    ` as HistoryRow[];
+    `;
 
     const entries = rows.map(historyRowToHistoryEntry);
 
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     const id = generateId();
     const now = new Date().toISOString();
 
-    const rows = await sql`
+    const rows = await query<HistoryRow>`
       INSERT INTO history (id, user_id, type, prompt, document_name, instructions, thumbnail, created_at)
       VALUES (
         ${id},
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
         ${now}
       )
       RETURNING *
-    ` as HistoryRow[];
+    `;
 
     const entry = historyRowToHistoryEntry(rows[0]);
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sql, getCurrentUserId } from '@/lib/db';
+import { query, sql, getCurrentUserId } from '@/lib/db';
 import type { DocumentRow, UpdateDocumentInput } from '@/types/document';
 import { documentRowToSavedDocument } from '@/types/document';
 
@@ -16,10 +16,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const { id } = await params;
     const userId = await getCurrentUserId();
 
-    const rows = await sql`
+    const rows = await query<DocumentRow>`
       SELECT * FROM documents
       WHERE id = ${id} AND user_id = ${userId}
-    ` as DocumentRow[];
+    `;
 
     if (rows.length === 0) {
       return NextResponse.json(
@@ -56,10 +56,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const body: UpdateDocumentInput = await request.json();
 
     // Check if document exists
-    const existingRows = await sql`
+    const existingRows = await query<DocumentRow>`
       SELECT * FROM documents
       WHERE id = ${id} AND user_id = ${userId}
-    ` as DocumentRow[];
+    `;
 
     if (existingRows.length === 0) {
       return NextResponse.json(
@@ -72,7 +72,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const now = new Date().toISOString();
 
     // Update with provided fields, keeping existing values for others
-    const rows = await sql`
+    const rows = await query<DocumentRow>`
       UPDATE documents
       SET
         name = ${body.name ?? existing.name},
@@ -82,7 +82,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         updated_at = ${now}
       WHERE id = ${id} AND user_id = ${userId}
       RETURNING *
-    ` as DocumentRow[];
+    `;
 
     const document = documentRowToSavedDocument(rows[0]);
 

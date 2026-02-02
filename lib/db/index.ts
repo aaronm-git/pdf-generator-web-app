@@ -1,6 +1,9 @@
-import { sql } from '@vercel/postgres';
+import { neon } from '@neondatabase/serverless';
 import { headers } from 'next/headers';
 import { auth } from '@/lib/auth';
+
+// Initialize Neon client
+const sql = neon(process.env.DATABASE_URL!);
 
 /**
  * Get the current authenticated user's ID.

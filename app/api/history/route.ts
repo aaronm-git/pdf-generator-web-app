@@ -16,7 +16,7 @@ export async function GET() {
   try {
     const userId = await getCurrentUserId();
 
-    const { rows } = await sql<HistoryRow>`
+    const rows = await sql<HistoryRow>`
       SELECT * FROM history
       WHERE user_id = ${userId}
       ORDER BY created_at DESC
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     const id = generateId();
     const now = new Date().toISOString();
 
-    const { rows } = await sql<HistoryRow>`
+    const rows = await sql<HistoryRow>`
       INSERT INTO history (id, user_id, type, prompt, document_name, instructions, thumbnail, created_at)
       VALUES (
         ${id},

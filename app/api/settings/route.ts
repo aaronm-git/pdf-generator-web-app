@@ -43,7 +43,7 @@ export async function GET() {
 
     const userId = session.user.id;
 
-    const { rows } = await sql<UserSettingsRow>`
+    const rows = await sql<UserSettingsRow>`
       SELECT * FROM user_settings WHERE user_id = ${userId}
     `;
 

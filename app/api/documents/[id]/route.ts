@@ -16,7 +16,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const { id } = await params;
     const userId = await getCurrentUserId();
 
-    const { rows } = await sql<DocumentRow>`
+    const rows = await sql<DocumentRow>`
       SELECT * FROM documents
       WHERE id = ${id} AND user_id = ${userId}
     `;
@@ -56,7 +56,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const body: UpdateDocumentInput = await request.json();
 
     // Check if document exists
-    const { rows: existingRows } = await sql<DocumentRow>`
+    const existingRows = await sql<DocumentRow>`
       SELECT * FROM documents
       WHERE id = ${id} AND user_id = ${userId}
     `;
@@ -72,7 +72,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const now = new Date().toISOString();
 
     // Update with provided fields, keeping existing values for others
-    const { rows } = await sql<DocumentRow>`
+    const rows = await sql<DocumentRow>`
       UPDATE documents
       SET
         name = ${body.name ?? existing.name},
@@ -110,12 +110,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     const { id } = await params;
     const userId = await getCurrentUserId();
 
-    const { rowCount } = await sql`
+    const result = await sql`
       DELETE FROM documents
       WHERE id = ${id} AND user_id = ${userId}
+      RETURNING id
     `;
 
-    if (rowCount === 0) {
+    if (result.length === 0) {
       return NextResponse.json(
         { error: 'Document not found' },
         { status: 404 }

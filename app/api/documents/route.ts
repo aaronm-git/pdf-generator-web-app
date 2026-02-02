@@ -12,7 +12,7 @@ export async function GET() {
   try {
     const userId = await getCurrentUserId();
 
-    const rows = await sql<DocumentRow>`
+    const rows = await sql`
       SELECT * FROM documents
       WHERE user_id = ${userId}
       ORDER BY updated_at DESC
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     const id = generateId();
     const now = new Date().toISOString();
 
-    const rows = await sql<DocumentRow>`
+    const rows = await sql`
       INSERT INTO documents (id, user_id, name, instructions, thumbnail, favorite, created_at, updated_at)
       VALUES (
         ${id},

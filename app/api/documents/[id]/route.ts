@@ -16,7 +16,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const { id } = await params;
     const userId = await getCurrentUserId();
 
-    const rows = await sql<DocumentRow>`
+    const rows = await sql`
       SELECT * FROM documents
       WHERE id = ${id} AND user_id = ${userId}
     `;
@@ -56,7 +56,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const body: UpdateDocumentInput = await request.json();
 
     // Check if document exists
-    const existingRows = await sql<DocumentRow>`
+    const existingRows = await sql`
       SELECT * FROM documents
       WHERE id = ${id} AND user_id = ${userId}
     `;
@@ -72,7 +72,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const now = new Date().toISOString();
 
     // Update with provided fields, keeping existing values for others
-    const rows = await sql<DocumentRow>`
+    const rows = await sql`
       UPDATE documents
       SET
         name = ${body.name ?? existing.name},

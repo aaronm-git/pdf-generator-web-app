@@ -29,7 +29,7 @@ export async function getUserSettings(
   userId: string
 ): Promise<DecryptedUserSettings | null> {
   try {
-    const rows = await sql<UserSettingsRow>`
+    const rows = await sql`
       SELECT * FROM user_settings WHERE user_id = ${userId}
     `;
 

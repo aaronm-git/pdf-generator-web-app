@@ -43,7 +43,7 @@ export async function GET() {
 
     const userId = session.user.id;
 
-    const rows = await sql<UserSettingsRow>`
+    const rows = await sql`
       SELECT * FROM user_settings WHERE user_id = ${userId}
     `;
 
@@ -136,7 +136,7 @@ export async function PUT(request: NextRequest) {
     const body: UpdateSettingsInput = await request.json();
 
     // Check if settings exist
-    const { rows: existingRows } = await sql<UserSettingsRow>`
+    const existingRows = await sql`
       SELECT * FROM user_settings WHERE user_id = ${userId}
     `;
 

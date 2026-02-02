@@ -7,7 +7,18 @@
       "Bash(curl:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "mcp__vercel__search_vercel_documentation",
+      "Bash(npm uninstall:*)",
+      "Bash(vercel env add:*)",
+      "mcp__vercel__list_projects",
+      "mcp__vercel__get_project",
+      "Bash(vercel env:*)",
+      "Bash(git push)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "next-devtools"
+  ]
 }

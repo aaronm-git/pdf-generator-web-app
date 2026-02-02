@@ -19,7 +19,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const rows = await sql`
       SELECT * FROM documents
       WHERE id = ${id} AND user_id = ${userId}
-    `;
+    ` as DocumentRow[];
 
     if (rows.length === 0) {
       return NextResponse.json(
@@ -59,7 +59,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const existingRows = await sql`
       SELECT * FROM documents
       WHERE id = ${id} AND user_id = ${userId}
-    `;
+    ` as DocumentRow[];
 
     if (existingRows.length === 0) {
       return NextResponse.json(
@@ -82,7 +82,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         updated_at = ${now}
       WHERE id = ${id} AND user_id = ${userId}
       RETURNING *
-    `;
+    ` as DocumentRow[];
 
     const document = documentRowToSavedDocument(rows[0]);
 

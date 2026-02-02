@@ -16,7 +16,7 @@ export async function GET() {
       SELECT * FROM documents
       WHERE user_id = ${userId}
       ORDER BY updated_at DESC
-    `;
+    ` as DocumentRow[];
 
     const documents = rows.map(documentRowToSavedDocument);
 
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
         ${now}
       )
       RETURNING *
-    `;
+    ` as DocumentRow[];
 
     const document = documentRowToSavedDocument(rows[0]);
 

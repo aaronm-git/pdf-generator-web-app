@@ -21,7 +21,7 @@ export async function GET() {
       WHERE user_id = ${userId}
       ORDER BY created_at DESC
       LIMIT ${MAX_HISTORY_ENTRIES}
-    `;
+    ` as HistoryRow[];
 
     const entries = rows.map(historyRowToHistoryEntry);
 
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
         ${now}
       )
       RETURNING *
-    `;
+    ` as HistoryRow[];
 
     const entry = historyRowToHistoryEntry(rows[0]);
 

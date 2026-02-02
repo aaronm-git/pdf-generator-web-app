@@ -31,7 +31,7 @@ export async function getUserSettings(
   try {
     const rows = await sql`
       SELECT * FROM user_settings WHERE user_id = ${userId}
-    `;
+    ` as UserSettingsRow[];
 
     if (rows.length === 0) {
       return null;

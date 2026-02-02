@@ -14,12 +14,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     const { id } = await params;
     const userId = await getCurrentUserId();
 
-    const { rowCount } = await sql`
+    const result = await sql`
       DELETE FROM history
       WHERE id = ${id} AND user_id = ${userId}
+      RETURNING id
     `;
 
-    if (rowCount === 0) {
+    if (result.length === 0) {
       return NextResponse.json(
         { error: 'History entry not found' },
         { status: 404 }
